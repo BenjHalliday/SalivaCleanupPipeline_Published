@@ -1,24 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --cpus-per-task 2
 #SBATCH --mem 4G
 #SBATCH --error slurm/KF_%j.out
 #SBATCH --output slurm/KF_%j.out
 #SBATCH --time 4:00:00
-#
+
 # 03_kraken2_filter.sh
-#
-# Uses the output of 02_kraken2_classify.sh to remove reads NOT matching a
-# given set of "retain" taxids from the original fastq files. By default
-# (no -t given) this retains only reads classified as human (NCBI taxid
-# 9606) and drops everything else as contamination -- pass a taxid lineage
-# file (see 01_build_taxonomic_lineage.R) via -t to retain a different
-# taxon (or its full lineage) instead.
-#
-# Run directly (bash 03_kraken2_filter.sh ...) or via `sbatch` on Slurm.
-#
-# Requirements: seqkit must be available on PATH, or loadable via
-# `module load $SEQKIT_MODULE` if the SEQKIT_MODULE environment variable is
-# set (for Lmod/Environment-Modules based clusters).
+# Uses the output of 02_kraken2_classify.sh to remove reads NOT matching a given set of retain taxids from the original fastq files. 
+# By default (i.e. no -t given) this retains only reads classified as human (taxid 9606) and drops everything else as contamination.
+# Pass a taxid lineage file (see 01_build_taxonomic_lineage.R) via -t to retain a different taxon (or its full lineage) instead.
+# Run directly (bash 03_kraken2_filter.sh ...) or via sbatch on Slurm.
+# Requirements: seqkit must be available on PATH, or loadable via `module load $SEQKIT_MODULE` if the SEQKIT_MODULE environment variable isset.
 
 set -euo pipefail
 
@@ -113,13 +105,8 @@ printf "%-22s%s\n" "Output directory" "${OUTDIR}" 1>&2
 if [[ -n "${SEQKIT_MODULE:-}" ]]; then
 	module purge
 	module load "${SEQKIT_MODULE}"
-elif command -v module >/dev/null 2>&1 && module avail seqkit/2.8.2 &>/dev/null; then
-	# Fall back to the version this pipeline was tested against, if available
-	module purge
-	module load seqkit/2.8.2
-fi
 if ! command -v seqkit >/dev/null 2>&1; then
-	echo "FAIL: seqkit not found on PATH. Set SEQKIT_MODULE or add seqkit to PATH." 1>&2
+	echo "FAIL: seqkit not found in PATH. Set SEQKIT_MODULE or add seqkit to PATH." 1>&2
 	exit 1
 fi
 
