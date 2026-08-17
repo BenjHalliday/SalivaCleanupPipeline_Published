@@ -33,7 +33,7 @@ raw fastqs --> 02_kraken2_classify.sh --> 03_kraken2_filter.sh --> filtered fast
 - [Kraken2](https://github.com/DerrickWood/kraken2) (tested with v2.1.3)
 - [seqkit](https://github.com/shenwei356/seqkit) (tested with v2.4.0 and v2.8.2)
 - R (≥4.0) with `tidyverse` and `data.table`
-- A Kraken2-compatible database (e.g. the [standard database](https://benlangmead.github.io/aws-indexes/k2), or a custom database, as detailed in the manuscript)
+- A Kraken2-compatible database (e.g. the [standard database](https://benlangmead.github.io/aws-indexes/k2), or a custom database as detailed in the manuscript)
 
 Both shell scripts can be run as standalones (`bash script.sh ...`) or can be submitted
 via `sbatch` on a Slurm cluster. If `kraken2`/`seqkit` are not already
