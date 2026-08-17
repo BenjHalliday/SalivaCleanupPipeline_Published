@@ -70,7 +70,7 @@ Filtered, decontaminated reads are written as
 For testing this pipeline against real publicly available human saliva WGS data, we'd suggest:
 
 - **SRA accessions ERX1462737, ERX1462740, SRX2830683, SRX2830684, SRX2830689**
-  — externally-derived saliva WGS datasets used as public test cases in a
+  — saliva-derived WGS datasets used as public test cases in a
    related study (Samson et al., *Sci Rep* 2020,
   [10.1038/s41598-020-76022-4](https://doi.org/10.1038/s41598-020-76022-4)),
   chosen because of known non-human contamination.
