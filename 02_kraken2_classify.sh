@@ -39,7 +39,7 @@ Optional:
 Environment:
   KRAKEN2_MODULE   If set, 'module load \$KRAKEN2_MODULE' is run before
                    invoking kraken2 (for Lmod/Environment-Modules clusters).
-                   If unset, kraken2 is expected to already be on PATH.
+                   If unset, kraken2 is expected to already be in PATH.
 *********************************" 1>&2)
 }
 
