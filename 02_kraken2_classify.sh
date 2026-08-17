@@ -94,7 +94,7 @@ if [[ -n "${KRAKEN2_MODULE:-}" ]]; then
 	module load "${KRAKEN2_MODULE}"
 fi
 if ! command -v kraken2 >/dev/null 2>&1; then
-	echo "FAIL: kraken2 not found on PATH. Set KRAKEN2_MODULE or add kraken2 to PATH." 1>&2
+	echo "FAIL: kraken2 not found in PATH. Set KRAKEN2_MODULE or add kraken2 to PATH." 1>&2
 	exit 1
 fi
 
