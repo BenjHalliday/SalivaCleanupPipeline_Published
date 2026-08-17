@@ -6,7 +6,7 @@ Scripts for taxonomically classifying and removing non-target (e.g.
 microbial) contaminant reads from short-read sequencing data, as used in
 [Citation - add on publication].
 
-Repository: https://github.com/BenjHalliday/SalivaCleanupPipeline
+Repository: https://github.com/BenjHalliday/SalivaCleanupPipeline_Published
 
 ## Pipeline overview
 
