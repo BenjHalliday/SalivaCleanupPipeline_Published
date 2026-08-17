@@ -1,23 +1,14 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --cpus-per-task 6
 #SBATCH --mem 74G
 #SBATCH --error slurm/KC_%j.out
 #SBATCH --output slurm/KC_%j.out
 #SBATCH --time 4:00:00
-#
+
 # 02_kraken2_classify.sh
-#
-# Runs Kraken2 taxonomic classification on paired-end (and optionally
-# unpaired) fastq reads. Intended as step 1 of a two-step contamination
-# screening pipeline; step 2 is 03_kraken2_filter.sh.
-#
-# This script can be run directly (bash 02_kraken2_classify.sh ...) or
-# submitted via `sbatch` on a Slurm cluster -- the #SBATCH lines above are
-# just comments outside of a Slurm context and are otherwise ignored.
-#
-# Requirements: kraken2 must be available on PATH, or loadable via
-# `module load $KRAKEN2_MODULE` if the KRAKEN2_MODULE environment variable
-# is set (for Lmod/Environment-Modules based clusters).
+# Runs Kraken2 taxonomic classification on paired-end (and optionally unpaired) fastq reads. Intended as step 1 of a two-step contamination screening pipeline; step 2 is 03_kraken2_filter.sh.
+# This script can be run directly (bash 02_kraken2_classify.sh ...) or submitted via sbatch on a Slurm cluster
+# Requirements: kraken2 must be available on PATH, or loadable via `module load $KRAKEN2_MODULE` if the KRAKEN2_MODULE environment variable is set.
 
 set -euo pipefail
 
@@ -101,10 +92,6 @@ printf "%-22s%s\n" "Output directory" "${OUTDIR}" 1>&2
 if [[ -n "${KRAKEN2_MODULE:-}" ]]; then
 	module purge
 	module load "${KRAKEN2_MODULE}"
-elif command -v module >/dev/null 2>&1 && module avail kraken2/2.1.3 &>/dev/null; then
-	# Fall back to the version this pipeline was tested against, if available
-	module purge
-	module load kraken2/2.1.3
 fi
 if ! command -v kraken2 >/dev/null 2>&1; then
 	echo "FAIL: kraken2 not found on PATH. Set KRAKEN2_MODULE or add kraken2 to PATH." 1>&2
