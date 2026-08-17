@@ -29,7 +29,7 @@ Usage: $0 -1 R1.fastq.gz -2 R2.fastq.gz -k /path/to/classify_output -o /path/to/
 Required:
   -1 [FILE]   Original Read 1 fastq(.gz) (the same file given to 02_kraken2_classify.sh)
   -2 [FILE]   Original Read 2 fastq(.gz)
-  -k [DIR]    Directory containing 02_kraken2_classify.sh's output for this sample
+  -k [DIR]    Directory containing output from 02_kraken2_classify.sh for this sample
 
 Optional:
   -u [FILE]   Original unpaired reads fastq(.gz), if classified in step 2
@@ -41,7 +41,7 @@ Optional:
 
 Environment:
   SEQKIT_MODULE   If set, 'module load \$SEQKIT_MODULE' is run before
-                  invoking seqkit. If unset, seqkit is expected on PATH.
+                  invoking seqkit. If unset, seqkit is expected in PATH.
 *********************************" 1>&2)
 }
 
