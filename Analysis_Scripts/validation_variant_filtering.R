@@ -146,7 +146,7 @@ write.table(Combined, file="data_clean/Genome_Singleton_Coding.tsv", quote=FALSE
 ##########################################################################################################
 
 #############################
-#### Split arrays ####
+####     Split arrays    ####
 #############################
 
 colnames(Combined) -> names
@@ -154,7 +154,7 @@ names[str_detect(names, "DecipherG2P")] -> DecipherG2Ps
 Combined %>%  separate_rows(CSQ,sep=",") %>%  separate_rows(DecipherG2Ps,sep=",")  -> Combined_Split
 
 ###############################
-### Split CSQ field  ####
+###    Split CSQ field     ####
 ###############################
 
 column_names <- sprintf("CSQ%d", 1:53)
@@ -341,7 +341,7 @@ readr::write_tsv(test_out, "data_clean/Comparison_HetCandidates_ConstraintGene_C
 #########    				Recurrent FP Genes		 	         ##########
 ###########################################################################
 
-RFP <- read.table( file = paste0(PROJECT_DIR,"/Validation/Resources/Field_2019_RFP.tsv"), header=T )
+RFP <- read.table( file = "/mnt/auto-hcs/genomics-aotearoa-variome/VariomeSalivaCleanup/Validation/Resources/Field_2019_RFP.tsv",header=T )
 
 Combined_Split_CSQ_Filtered_Canonical_output_Post_new_noRFP <- Combined_Split_CSQ_Filtered_Canonical_output_Post_new %>% filter( !str_split(CSQ4, ",") %>% map_lgl(~ any(.x %in% RFP$Gene) ) )
 Combined_Split_CSQ_Filtered_Canonical_output_Pre_new_noRFP <- Combined_Split_CSQ_Filtered_Canonical_output_Pre_new %>% filter( !str_split(CSQ4, ",") %>% map_lgl(~ any(.x %in% RFP$Gene) ) )
@@ -364,27 +364,30 @@ write.table(Combined_Split_CSQ_Filtered_Canonical_output_Pre_new_noRFP, file="da
 
 for(id in unique(ids)) {
         rm(list = ls(pattern="^kraken_*"))
-        path <- paste0(PROJECT_DIR,"/Validation/Alignments/CMM_Alignments/",id,"_NoFastP_Kraken_trained_taxid_k24/Kraken2/")
-        files <- list.files(path, pattern = "_Report\\.tsv$")
+        path <- paste0("/mnt/auto-hcs/genomics-aotearoa-variome/VariomeSalivaCleanup/Validation/Alignments/CMM_Alignments/",id,"_NoFastP_Kraken_trained_taxid_k24/Kraken2/")
+        files <- list.files(path, pattern = "^[A-Z].*_Report\\.tsv$")
         for(file in files) {
                 num <- which(file == files)
                 data <- fread(file = paste0(path,file), sep = '\t', quote = "", stringsAsFactors = FALSE)
                 human <- data %>% filter(V6 == "Homo sapiens") %>% pull(V3)
+				unclass <- data %>% filter(V6 == "unclassified") %>% pull(V3)
                 total <- data %>% select(V3) %>% sum()
 
-                assign( paste0("kraken_",num), data.frame(num,human,total))
+                assign( paste0("kraken_",num), data.frame(num,human,total,unclass))
 
         }
 
         bind_rows(mget(ls(pattern="^kraken_*"))) -> combined_kraken
 
         tot_human <- sum(combined_kraken$human)
+        tot_unclass <- sum(combined_kraken$unclass)
         tot_tot <- sum(combined_kraken$total)
 
-        Human_Percentage <- tot_human / tot_tot
+        Human_Percentage <- (tot_human / tot_tot) * 100
+        Unclass_Percentage <- (tot_unclass / tot_tot) * 100
         Individual <- id
 
-        assign( paste0("percentage_",id), data.frame(Individual,Human_Percentage))
+        assign( paste0("percentage_",id), data.frame(Individual,Human_Percentage,Unclass_Percentage))
 }
 bind_rows(mget(ls(pattern="^percentage_*"))) -> combined_human_percentages
 
@@ -393,7 +396,7 @@ combined_diff <- Group_Tally %>%
   pivot_wider(names_from = Group, values_from = n) %>%
   mutate(Diff = `No Cleanup` - Cleanup )
   
-combined_diffvcontam <- left_join(combined_diff,combined_human_percentages,by="Individual") %>% mutate( Microbiome_Percentage = (1 - Human_Percentage) * 100 )
+combined_diffvcontam <- left_join(combined_diff,combined_human_percentages,by="Individual") %>% mutate( Microbiome_Percentage = (100 - Human_Percentage - Unclass_Percentage)  )
 readr::write_tsv(combined_diffvcontam, "data_clean/Comparison_HetCandidates_Contamination.tsv")
 
 lm_fit <- lm(Diff ~ Microbiome_Percentage, data = combined_diffvcontam)
@@ -419,11 +422,12 @@ readr::write_tsv(test_out, "data_clean/Comparison_HetCandidates_ContaminationCor
 #RColorBrewer::brewer.pal(8, "Dark2")
 plot_contam_line <- ggplot(combined_diffvcontam, aes(x = Microbiome_Percentage, y = Diff)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = "#1B9E77") +  # Add trendline
-  annotate("text", x = max(combined_diffvcontam$Microbiome_Percentage) * 0.7, 
-                 y = max(combined_diffvcontam$Diff) * 0.9, 
-                 label = equation, parse = TRUE, size = 6) +  # Add formula
-  labs(x = "Estimated Microbiome Sequence Presence (%)", 
+  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, level = 0.95,
+              color = "#1B9E77", fill = "#1B9E77", alpha = 0.2) +  # trendline with 95% confidence band
+  annotate("text", x = max(combined_diffvcontam$Microbiome_Percentage) * 0.7,
+           y = max(combined_diffvcontam$Diff) * 0.9,
+           label = equation, parse = TRUE, size = 6) +
+  labs(x = "Estimated Microbiome Sequence Presence (%)",
        y = "Reduction in Candidate Variants\nAfter Cleanup") +
   ggplot_theme_basic
 ggsave(plot=plot_contam_line, filename="graphs/Validation_CleanUp_Comp_Contamination_vs_Effect.pdf", device="pdf", width = 30, height = 30, units = "cm", dpi = 640)

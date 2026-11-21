@@ -100,7 +100,7 @@ safe <- function(x) tryCatch(print(x), error = function(e) message("Skipped: ", 
 cohorts <- tribble(~Cohort, ~Meta, ~Dir, "Training", TRA_META, TRA_ALG_DIR, "Validation", VAL_META, VAL_ALG_DIR, "Comparison", COM_META, COM_ALG_DIR)
 
 read_bracken <- function(Cohort, Dir, ...) {
-	f <- list.files(Dir, pattern = "_Report_(Species|Genus)\\.bracken$", recursive = TRUE, full.names = TRUE)
+	f <- list.files(Dir, pattern = "_Report_(Domain|Species|Genus)\\.bracken$", recursive = TRUE, full.names = TRUE)
 	if (!length(f)) { warning("No Bracken files for ", Cohort, " under ", Dir); return(NULL) }
 	rel <- str_remove(f, fixed(paste0(sub("/+$", "", Dir), "/")))
 	map2_dfr(f, rel, ~ read_tsv(.x, show_col_types = FALSE) %>% mutate(Sample = str_split_i(.y, "/", 1), Level = if_else(str_detect(.x, "_Species\\.bracken$"), "Species", "Genus"), Cohort = Cohort, File = .x))
@@ -121,9 +121,20 @@ sinfo <- distinct(samp, Sample, Cohort, Sample_Type) %>% group_by(Cohort) %>% ar
 	mutate(Sample_Label = case_when( Cohort == "Training"   ~ paste0("Train_", row_number()), Cohort == "Validation" ~ paste0("Val_", row_number()), Cohort == "Comparison" ~ paste0("Comp_", dense_rank(pair_key(Sample)), if_else(Sample_Type == "Blood", "B", "S")))) %>%
 	ungroup() %>% mutate(Sample_Label = factor(Sample_Label, levels = str_sort(unique(Sample_Label), numeric = TRUE)))
 
+species <- bracken %>% filter(taxonomy_lvl == "S", name != "Homo") %>%
+	transmute(Sample, Genus = name, Reads = new_est_reads, Frac_Total = fraction_total_reads) %>%
+	left_join(sinfo, by = "Sample") %>% group_by(Sample) %>% mutate(Rel = Reads / sum(Reads), Source = src(Genus)) %>% ungroup()
+write_tsv(species, "data_raw/bracken_species.tsv")
+
 genus <- bracken %>% filter(taxonomy_lvl == "G", name != "Homo") %>%
 	transmute(Sample, Genus = name, Reads = new_est_reads, Frac_Total = fraction_total_reads) %>%
 	left_join(sinfo, by = "Sample") %>% group_by(Sample) %>% mutate(Rel = Reads / sum(Reads), Source = src(Genus)) %>% ungroup()
+write_tsv(genus, "data_raw/bracken_genus.tsv")
+
+Domain <- bracken %>% filter(taxonomy_lvl == "D", name != "Eukaryota") %>%
+	transmute(Sample, Genus = name, Reads = new_est_reads, Frac_Total = fraction_total_reads) %>%
+	left_join(sinfo, by = "Sample") %>% group_by(Sample) %>% mutate(Rel = Reads / sum(Reads), Source = src(Genus)) %>% ungroup()
+write_tsv(Domain, "data_raw/bracken_domain.tsv")
 
 ####################################################################################################################
 ###                                        1. Source Composition                                                ####
@@ -199,6 +210,15 @@ p_comp <- ggplot(fix(comp), aes(Sample_Label, Frac * 100, fill = Key, colour = K
 
 p <- p_hum / plot_spacer() / p_comp + plot_layout(heights = c(1, plot_gap, 4))
 ggsave("graphs/Source_Composition.pdf", p, width = 32, height = 18)
+
+genus_clean <- genus %>% left_join(top_g %>% select(Source, Genus) %>% mutate(Top = TRUE), by = c("Source", "Genus")) %>%
+	group_by(Sample, Sample_Label, Cohort, Sample_Type, Genus) %>% summarise(Frac = sum(Rel), .groups = "drop")
+write_tsv(genus_clean, "data_raw/bracken_genus_cleaned.tsv")
+
+threshold <- 0.01
+genus_summary <- genus_clean %>% filter(Frac > threshold) %>% group_by(Sample_Type, Genus) %>% summarise( Common_Genus = n_distinct(Sample), .groups = "drop" ) %>% 
+	left_join( genus_clean %>% group_by(Sample_Type) %>% summarise(Total_Samples = n_distinct(Sample), .groups = "drop"), by = "Sample_Type" )
+write_tsv(genus_summary, "data_raw/bracken_genus_cleaned_summary.tsv")
 
 source_frac <- genus %>% group_by(Sample, Sample_Label, Cohort, Sample_Type, Source) %>% summarise(Frac = sum(Rel), .groups = "drop") %>%
 	complete(nesting(Sample, Sample_Label, Cohort, Sample_Type), Source, fill = list(Frac = 0))
@@ -288,7 +308,7 @@ p <- bio %>% distinct(Sample, Cohort, Sample_Type, Microbial_Frac) %>% ggplot(ae
 ggsave("graphs/MicrobialFraction_ByGroup.pdf", p, width = 8, height = 6)
 
 ####################################################################################################################
-###                                               Finish                                                       ####
+###                                               Finish                                                        ####
 ####################################################################################################################
 
 quit()

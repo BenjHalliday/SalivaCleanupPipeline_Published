@@ -104,6 +104,19 @@ do
 		filter_bracken.out.py -i ${train_algdir}/${id}/${id}_Kraken2_Report_Genus.bracken \
 			-o ${train_algdir}/${id}/${id}_Kraken2_Report_Genus_NonHuman.bracken --exclude 9605
 	fi
+	
+	if [[ ! -s ${train_algdir}/${id}/${id}_Kraken2_Report_Domain.bracken ]]
+	then
+		bracken -d ${db} -i ${train_algdir}/${id}/${id}_Kraken2_Report.tsv \
+			-o ${train_algdir}/${id}/${id}_Kraken2_Report_Domain.bracken \
+			-w ${train_algdir}/${id}/${id}_Kraken2_Report_Domain.tsv -r 150 -l D
+	fi
+
+	if [[ ! -s ${train_algdir}/${id}/${id}_Kraken2_Report_Domain_NonHuman.bracken ]]
+	then
+		filter_bracken.out.py -i ${train_algdir}/${id}/${id}_Kraken2_Report_Domain.bracken \
+			-o ${train_algdir}/${id}/${id}_Kraken2_Report_Domain_NonHuman.bracken --exclude 9605
+	fi
 done
 
 cat $val_meta | sed 1d | cut -f1 | sort -u | while read -r id
@@ -138,6 +151,19 @@ do
 		filter_bracken.out.py -i ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Genus.bracken \
 			-o ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Genus_NonHuman.bracken --exclude 9605
 	fi
+	
+	if [[ ! -s ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Domain.bracken ]]
+	then
+		bracken -d ${db} -i ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report.tsv \
+			-o ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Domain.bracken \
+			-w ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Domain.tsv -r 150 -l D
+	fi
+
+	if [[ ! -s ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Domain_NonHuman.bracken ]]
+	then
+		filter_bracken.out.py -i ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Domain.bracken \
+			-o ${val_algdir}/${id}_NoFastP_Kraken_trained_taxid_k24/Kraken2/${id}_NoFastP_Kraken_trained_taxid_k24_Kraken2Screened_Report_Domain_NonHuman.bracken --exclude 9605
+	fi
 done
 
 cat $comp_meta | sed 1d | cut -f1 | sort -u | while read -r id
@@ -171,6 +197,19 @@ do
 	then
 		filter_bracken.out.py -i ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Genus.bracken \
 			-o ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Genus_NonHuman.bracken --exclude 9605
+	fi
+
+	if [[ ! -s ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Domain.bracken ]]
+	then
+		bracken -d ${db} -i ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report.tsv \
+			-o ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Domain.bracken \
+			-w ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Domain.tsv -r 150 -l D
+	fi
+
+	if [[ ! -s ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Domain_NonHuman.bracken ]]
+	then
+		filter_bracken.out.py -i ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Domain.bracken \
+			-o ${comp_algdir}/${id}_NoFastP_Krakentaxid_k19/Kraken2/${id}_NoFastP_Krakentaxid_k19_Kraken2_Report_Domain_NonHuman.bracken --exclude 9605
 	fi
 done
 
